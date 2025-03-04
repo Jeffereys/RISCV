@@ -1,0 +1,59 @@
+module memoryUnit (
+    input CLK100  // 100 MHz system clock
+);
+
+    // Internal signals
+    reg [31:2] i_addr = 0;
+    wire [31:0] i_rdata;
+
+    // Instruction address generator for testing
+    always @(posedge CLK100) begin
+        i_addr <= i_addr + 1;
+    end
+
+    // Instantiate dual port RAM
+    dual_port_ram ram_inst (
+        .clk(CLK100),
+        .i_addr(i_addr),
+        .i_rdata(i_rdata)
+    );
+
+    // Integrated Logic Analyzer (ILA) for verification
+    ila_0 ila_inst (
+        .clk(CLK100),
+        .probe0(i_addr),
+        .probe1(i_rdata)
+    );
+
+endmodule
+
+
+module dual_port_ram (
+    input clk,
+    // Instruction port (RO)
+    input [31:2] i_addr,
+    output reg [31:0] i_rdata
+    
+    
+    
+);
+
+    // Define address width
+    localparam ADDR_WIDTH = 15;
+
+    // Declare RAM: 32K x 32-bit (128K bytes)
+    reg [31:0] ram [(2**ADDR_WIDTH)-1];
+    
+    // Initialize RAM from file
+    initial begin
+        // $readmemh reads memory contents from a hex file
+        // Syntax: $readmemh("File", ArrayName, StartAddr, EndAddr);
+        $readmemh("init_file.hex", ram);
+    end
+
+    always @(posedge clk) begin
+        // Read from instruction port (Read-Only)
+        i_rdata <= ram[i_addr];
+    end
+
+endmodule
